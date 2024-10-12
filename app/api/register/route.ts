@@ -18,46 +18,102 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  if (request.method !== 'POST') {
-    return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 })
-  }
-
-  const {
-    email,
-    password,
-    aboutMe,
-    streetAddress,
-    city,
-    state,
-    zip,
-    birthdate
-  } = body
-
-  const pool = new Pool(dbConfig)
-
+  console.log('POST request received')
+  
   try {
-    const client = await pool.connect()
+    const body = await request.json()
+    console.log('Request body:', body)
+
+    const {
+      email,
+      password,
+      birthdate,
+      aboutMe,
+      streetAddress,
+      city,
+      state,
+      zip
+    } = body
+
+    const pool = new Pool(dbConfig)
+
     try {
-      await client.query('BEGIN')
-      const insertQuery = `
-        INSERT INTO users (email, password, about_me, street_address, city, state, zip, birthdate)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      `
-      await client.query(insertQuery, [email, password, aboutMe, streetAddress, city, state, zip, birthdate])
-      await client.query('COMMIT')
-      return NextResponse.json({ success: true }, { status: 200 })
+      const client = await pool.connect()
+      try {
+        await client.query('BEGIN')
+
+        // Prepare dynamic query parts
+        let columns = ['email', 'password']
+        let values = [email, password]
+        let placeholders = ['$1', '$2']
+        let index = 3
+
+        if (birthdate) {
+          columns.push('birthdate')
+          values.push(birthdate)
+          placeholders.push(`$${index}`)
+          index++
+        }
+
+        if (aboutMe) {
+          columns.push('about_me')
+          values.push(aboutMe)
+          placeholders.push(`$${index}`)
+          index++
+        }
+
+        if (streetAddress) {
+          columns.push('street_address')
+          values.push(streetAddress)
+          placeholders.push(`$${index}`)
+          index++
+        }
+
+        if (city) {
+          columns.push('city')
+          values.push(city)
+          placeholders.push(`$${index}`)
+          index++
+        }
+
+        if (state) {
+          columns.push('state')
+          values.push(state)
+          placeholders.push(`$${index}`)
+          index++
+        }
+
+        if (zip) {
+          columns.push('zip')
+          values.push(zip)
+          placeholders.push(`$${index}`)
+          index++
+        }
+
+        const insertQuery = `
+          INSERT INTO users (${columns.join(', ')})
+          VALUES (${placeholders.join(', ')})
+        `
+
+        await client.query(insertQuery, values)
+        await client.query('COMMIT')
+        console.log('User registered successfully')
+        return NextResponse.json({ success: true })
+      } catch (error) {
+        await client.query('ROLLBACK')
+        console.error('Error inserting user data:', error)
+        return NextResponse.json({ error: 'Failed to register user' }, { status: 500 })
+      } finally {
+        client.release()
+      }
     } catch (error) {
-      await client.query('ROLLBACK')
-      console.error('Error inserting user data:', error)
-      return NextResponse.json({ error: 'Failed to register user' }, { status: 500 })
+      console.error('Error connecting to database:', error)
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
     } finally {
-      client.release()
+      await pool.end()
     }
   } catch (error) {
-    console.error('Error connecting to database:', error)
-    return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
-  } finally {
-    await pool.end()
+    console.error('Error processing request:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

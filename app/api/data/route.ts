@@ -4,6 +4,7 @@ import { Pool } from 'pg'
 const connectionString = 'postgresql://postgres.kiihenmwpjtvgbktvvul:Lantuzi@2024@aws-0-eu-central-1.pooler.supabase.com:6543/postgres'
 export const revalidate = 0;
 
+
 export async function GET() {
   console.log('API route called')
   const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } })

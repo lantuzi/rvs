@@ -13,15 +13,19 @@ export default function AdminPage() {
   const [page3Components, setPage3Components] = useState<string[]>([])
 
   useEffect(() => {
-    // Fetch current configuration
     fetchConfiguration()
   }, [])
 
   const fetchConfiguration = async () => {
-    const response = await fetch('/api/admin/configuration')
-    const data = await response.json()
-    setPage2Components(data.page2 || [])
-    setPage3Components(data.page3 || [])
+    try {
+      const response = await fetch('/api/admin/configuration')
+      const data = await response.json()
+      setPage2Components(data.page2 || [])
+      setPage3Components(data.page3 || [])
+    } catch (error) {
+      console.error('Error fetching configuration:', error)
+      alert('Failed to load configuration')
+    }
   }
 
   const handleComponentToggle = (componentId: string, page: number) => {
@@ -46,7 +50,6 @@ export default function AdminPage() {
       return
     }
 
-    
     try {
       const response = await fetch('/api/admin/configuration', {
         method: 'POST',
@@ -54,33 +57,19 @@ export default function AdminPage() {
         body: JSON.stringify({ page2: page2Components, page3: page3Components })
       })
 
-      console.log('Response status:', response.status)
-      console.log('Response headers:', Object.fromEntries(response.headers))
-
-      const contentType = response.headers.get("content-type");
-      console.log('Content-Type:', contentType)
-
-      if (contentType && contentType.indexOf("application/json") !== -1) {
-        const data = await response.json()
-        console.log('Response data:', data)
-        if (response.ok) {
-          if (data.success) {
-            alert('Configuration saved successfully')
-          } else {
-            throw new Error(data.error || 'Unexpected response from server')
-          }
-        } else {
-          throw new Error(data.error || `HTTP error! status: ${response.status}`)
-        }
-      } else {
-        // If the response is not JSON, read it as text
-        const text = await response.text()
-        console.error('Unexpected response:', text)
-        throw new Error('Server returned an unexpected response')
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-    } catch (error: unknown) {
-      console.error('Error in handleSubmit:', error);
-      alert(`Failed to save configuration: ${(error as Error).message || 'An unknown error occurred'}`);
+
+      const data = await response.json()
+      if (data.success) {
+        alert('Configuration saved successfully')
+      } else {
+        throw new Error(data.error || 'Unexpected response from server')
+      }
+    } catch (error) {
+      console.error('Error saving configuration:', error)
+      alert(`Failed to save configuration: ${(error as Error).message || 'An unknown error occurred'}`)
     }
   }
 

@@ -32,11 +32,15 @@ export default function OnboardingStep3() {
   }, [])
 
   const fetchConfiguration = async () => {
-    const response = await fetch('/api/admin/configuration')
-    const data = await response.json()
-    setComponents(data.page3 || [])
+    try {
+      const response = await fetch('/api/admin/configuration')
+      const data = await response.json()
+      setComponents(data.page3 || [])
+    } catch (error) {
+      console.error('Error loading configuration:', error)
+      setComponents([])
+    }
   }
-
   const loadDataFromLocalStorage = () => {
     setAboutMe(localStorage.getItem('aboutMe') || '')
     setStreet(localStorage.getItem('streetAddress') || '')

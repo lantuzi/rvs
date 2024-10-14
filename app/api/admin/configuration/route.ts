@@ -1,39 +1,45 @@
 import { NextResponse } from 'next/server'
-import fs from 'fs/promises'
-import path from 'path'
+import { Pool } from 'pg'
 
-const configPath = path.join(process.cwd(), 'config.json')
+const pool = new Pool({
+  connectionString: 'postgresql://postgres.kiihenmwpjtvgbktvvul:Lantuzi@2024@aws-0-eu-central-1.pooler.supabase.com:6543/postgres',
+  ssl: {
+    rejectUnauthorized: false
+  }
+})
 
 export async function GET() {
   try {
-    const config = await fs.readFile(configPath, 'utf-8')
-    return NextResponse.json(JSON.parse(config))
+    const client = await pool.connect()
+    const result = await client.query('SELECT config_value FROM configurations WHERE config_key = $1', ['app_config'])
+    client.release()
+
+    if (result.rows.length > 0) {
+      return NextResponse.json(result.rows[0].config_value)
+    } else {
+      return NextResponse.json({ page2: ['aboutMe'], page3: ['address'] })
+    }
   } catch (error) {
     console.error('Error reading configuration:', error)
-    // If file doesn't exist, return default configuration
     return NextResponse.json({ page2: ['aboutMe'], page3: ['address'] })
   }
 }
 
 export async function POST(request: Request) {
-  console.log('POST request received')
   try {
     const body = await request.json()
-    console.log('Request body:', body)
-    
-    if (!body.page2 || !body.page3 || body.page2.length === 0 || body.page3.length === 0) {
-      return NextResponse.json({ error: 'Invalid configuration' }, { status: 400 })
-    }
-
-    await fs.writeFile(configPath, JSON.stringify(body, null, 2))
-    console.log('Configuration saved successfully')
+    const client = await pool.connect()
+    await client.query(
+      'INSERT INTO configurations (config_key, config_value) VALUES ($1, $2) ON CONFLICT (config_key) DO UPDATE SET config_value = $2',
+      ['app_config', body]
+    )
+    client.release()
     return NextResponse.json({ success: true })
   } catch (error: unknown) {
-    console.error('Error saving configuration:', error);
-    
+    console.error('Error saving configuration:', error)
     return NextResponse.json({ 
       error: 'Failed to save configuration', 
       details: (error as Error).message || 'An unknown error occurred'
-    }, { status: 500 });
+    }, { status: 500 })
   }
 }

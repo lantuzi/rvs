@@ -30,10 +30,14 @@ export default function OnboardingStep2() {
   }, [])
 
   const fetchConfiguration = async () => {
-    const response = await fetch('/api/admin/configuration')
-    const data = await response.json()
-    console.log('Fetched configuration:', data)  // Add this line for debugging
-    setComponents(data.page2 || [])
+    try {
+      const response = await fetch('/api/admin/configuration')
+      const data = await response.json()
+      setComponents(data.page2 || [])
+    } catch (error) {
+      console.error('Error loading configuration:', error)
+      setComponents([])
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

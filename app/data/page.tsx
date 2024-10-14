@@ -22,7 +22,8 @@ export default function DataPage() {
     setLoading(true)
     setError('')
     try {
-      const response = await fetch('/api/data', {
+      const timestamp = new Date().getTime()
+      const response = await fetch(`/api/data?t=${timestamp}`, {
         method: 'GET',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',

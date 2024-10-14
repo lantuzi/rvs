@@ -1,32 +1,29 @@
 import { NextResponse } from 'next/server'
 import { Pool } from 'pg'
 
-const dbConfig = {
-  user: 'postgres.kiihenmwpjtvgbktvvul',
-  password: 'Lantuzi@2024',
-  host: 'aws-0-eu-central-1.pooler.supabase.com',
-  port: 6543,
-  database: 'postgres',
-  ssl: {
-    rejectUnauthorized: false
-  }
-}
+const connectionString = 'postgresql://postgres.kiihenmwpjtvgbktvvul:Lantuzi@2024@aws-0-eu-central-1.pooler.supabase.com:6543/postgres'
 
 export async function GET() {
-  const pool = new Pool(dbConfig)
+  console.log('API route called')
+  const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } })
   
   try {
+    console.log('Attempting to connect to database')
     const client = await pool.connect()
     try {
+      console.log('Connected to database, executing query')
       const result = await client.query('SELECT * FROM users')
+      console.log(`Query executed, ${result.rows.length} rows returned`)
       return NextResponse.json(result.rows)
     } finally {
       client.release()
+      console.log('Database connection released')
     }
   } catch (error) {
     console.error('Database query error:', error)
     return NextResponse.json({ error: 'Failed to fetch user data' }, { status: 500 })
   } finally {
     await pool.end()
+    console.log('Pool ended')
   }
 }

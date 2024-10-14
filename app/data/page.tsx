@@ -18,13 +18,18 @@ export default function DataPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    fetchUsers()
-  }, [])
-
   const fetchUsers = async () => {
+    setLoading(true)
+    setError('')
     try {
-      const response = await fetch('/api/data')
+      const response = await fetch('/api/data', {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
+      })
       if (!response.ok) {
         throw new Error('Failed to fetch user data')
       }
@@ -38,8 +43,11 @@ export default function DataPage() {
     }
   }
 
+  useEffect(() => {
+    fetchUsers()
+  }, [])
+
   const handleRefresh = () => {
-    setLoading(true)
     fetchUsers()
   }
 

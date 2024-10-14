@@ -46,6 +46,7 @@ export default function AdminPage() {
       return
     }
 
+    
     try {
       const response = await fetch('/api/admin/configuration', {
         method: 'POST',

@@ -43,9 +43,9 @@ export async function POST(request: Request) {
         await client.query('BEGIN')
 
         // Prepare dynamic query parts
-        let columns = ['email', 'password']
-        let values = [email, password]
-        let placeholders = ['$1', '$2']
+        const columns = ['email', 'password']
+        const values = [email, password]
+        const placeholders = ['$1', '$2']
         let index = 3
 
         if (birthdate) {

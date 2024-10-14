@@ -28,12 +28,12 @@ export async function POST(request: Request) {
     await fs.writeFile(configPath, JSON.stringify(body, null, 2))
     console.log('Configuration saved successfully')
     return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error saving configuration:', error)
-    // Return a more detailed error message
+  } catch (error: unknown) {
+    console.error('Error saving configuration:', error);
+    
     return NextResponse.json({ 
       error: 'Failed to save configuration', 
-      details: error.message 
-    }, { status: 500 })
+      details: (error as Error).message || 'An unknown error occurred'
+    }, { status: 500 });
   }
 }

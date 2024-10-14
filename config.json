@@ -1,9 +1,9 @@
 {
   "page2": [
+    "aboutMe",
     "address"
   ],
   "page3": [
-    "birthdate",
-    "aboutMe"
+    "birthdate"
   ]
 }

@@ -1,17 +1,21 @@
-import Image from "next/image";
-"use client"; 
-import { useState } from "react";
+'use client';
+
+import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const router = useRouter();
-  if (!router) {
-    return null; // or return a loading state
-  }
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isRouterReady, setIsRouterReady] = useState(false)
+
+  useEffect(() => {
+    if (router) {
+      setIsRouterReady(true)
+    }
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,6 +47,10 @@ export default function Home() {
 
     // Navigate to next step
     router.push('/step2');
+  }
+
+  if (!isRouterReady) {
+    return <div>Loading...</div>; // or any loading state you prefer
   }
 
   return (

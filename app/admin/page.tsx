@@ -78,9 +78,9 @@ export default function AdminPage() {
         console.error('Unexpected response:', text)
         throw new Error('Server returned an unexpected response')
       }
-    } catch (error) {
-      console.error('Error in handleSubmit:', error)
-      alert(`Failed to save configuration: ${error.message}`)
+    } catch (error: unknown) {
+      console.error('Error in handleSubmit:', error);
+      alert(`Failed to save configuration: ${(error as Error).message || 'An unknown error occurred'}`);
     }
   }
 

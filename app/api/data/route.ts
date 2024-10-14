@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server'
 import { Pool } from 'pg'
 
 const dbConfig = {
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME,
+  user: 'postgres.kiihenmwpjtvgbktvvul',
+  password: 'Lantuzi@2024',
+  host: 'aws-0-eu-central-1.pooler.supabase.com',
+  port: 6543,
+  database: 'postgres',
   ssl: {
-    rejectUnauthorized: false
+    rejectUnauthorized: false // You might need this if you're using SSL
   }
 }
 
